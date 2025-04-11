@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  pvzservice:
+    build: 
+      context: .
+      dockerfile: Dockerfile  
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    networks:
+      - pvz_network
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=54321
+      
+  db:
+    container_name: db
+    restart: always
+    image: postgres:latest
+    volumes: 
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=54321
+    ports:
+      - 5436:5432
+    networks:
+      - pvz_network
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d postgres'"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+  prometheus:
+    platform: linux/amd64
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - pvzservice
+    networks:
+      - pvz_network
+
+volumes:
+  pgdata:
+
+networks:
+  pvz_network:
+    name: pvz_network
+    driver: bridge
