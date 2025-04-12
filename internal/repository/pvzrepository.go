@@ -152,3 +152,7 @@ func (r *PvzPostgres) queryProductData(conditionsOther []string, args []interfac
 	err := r.db.Select(&products, query, args...)
 	return products, err
 }
+
+func (r *PvzPostgres) DB() *sqlx.DB {
+	return r.db
+}
