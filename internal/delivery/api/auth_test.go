@@ -34,8 +34,9 @@ func TestHandler_dummyLogin(t *testing.T) {
 			mockBehavior: func(s *mock_usecase.MockAuthorization, role string) {
 				s.EXPECT().GenerateToken(uuid.MustParse("22222222-2222-2222-2222-222222222222"), 2).Return("valid.jwt.token", nil)
 			},
-			expectedStatusCode:   200,
-			expectedResponseBody: `{"token":"valid.jwt.token"}`,
+			expectedStatusCode: 200,
+			expectedResponseBody: `{		"message": "Успешная авторизация",
+						"token":"valid.jwt.token"}`,
 		},
 		{
 			name:                 "Invalid JSON Input",
@@ -94,10 +95,13 @@ func TestHandler_signUp(t *testing.T) {
 				Role:     "employee",
 			},
 			mockBehavior: func(s *mock_usecase.MockAuthorization, user domain.User) {
-				s.EXPECT().CreateUser(user).Return(1, nil)
+				s.EXPECT().CreateUser(user).Return(domain.User{
+					Email: "test",
+					Role:  "employee",
+				}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"id":1}`,
+			expectedResponseBody: `{"message":"Пользователь создан", "content":{"email":"test", "role":"employee"}}`,
 		},
 		{
 			name:      "Ошибка выполнения запроса",
@@ -108,7 +112,7 @@ func TestHandler_signUp(t *testing.T) {
 				Role:     "moderator",
 			},
 			mockBehavior: func(s *mock_usecase.MockAuthorization, user domain.User) {
-				s.EXPECT().CreateUser(user).Return(0, errors.New("Internal Server Error"))
+				s.EXPECT().CreateUser(user).Return(domain.User{}, errors.New("Internal Server Error"))
 			},
 			expectedStatusCode:   500,
 			expectedResponseBody: `{"message":"Internal Server Error"}`,
@@ -176,7 +180,7 @@ func TestHandler_signIn(t *testing.T) {
 				s.EXPECT().GenerateToken(userID, 2).Return("valid.jwt.token", nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"token":"valid.jwt.token"}`,
+			expectedResponseBody: `{"message": "Успешная авторизация","token":"valid.jwt.token"}`,
 		},
 		{
 			name:      "Пользователь не найден",
@@ -187,7 +191,7 @@ func TestHandler_signIn(t *testing.T) {
 				s.EXPECT().SignUser("notname", "password123").Return(domain.User{}, errors.New("пользователь не найден"))
 			},
 			expectedStatusCode:   500,
-			expectedResponseBody: `{"message":"Ошибка авторизации: пользователь не найден"}`,
+			expectedResponseBody: `{"message":"Ошибка авторизации"}`,
 		},
 		{
 			name:                 "Invalid JSON Input",
@@ -205,7 +209,7 @@ func TestHandler_signIn(t *testing.T) {
 				s.EXPECT().SignUser("test", "12345").Return(domain.User{}, errors.New("Internal Server Error"))
 			},
 			expectedStatusCode:   500,
-			expectedResponseBody: `{"message":"Ошибка авторизации: Internal Server Error"}`,
+			expectedResponseBody: `{"message":"Ошибка авторизации"}`,
 		},
 	}
 

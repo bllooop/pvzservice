@@ -60,7 +60,8 @@ func (h *Handler) DummyLogin(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]any{
-		"token": token,
+		"message": "Успешная авторизация",
+		"token":   token,
 	})
 	logger.Log.Info().Msg("Получили токен")
 }
@@ -78,14 +79,15 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 	logger.Log.Debug().Msgf("Успешно прочитаны почта: %s, пароль: %s, роль: %s", input.Email, input.Password, input.Role)
-	id, err := h.Usecases.Authorization.CreateUser(input)
+	result, err := h.Usecases.Authorization.CreateUser(input)
 	if err != nil {
 		logger.Log.Error().Err(err).Msg("")
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"id": id,
+		"message": "Пользователь создан",
+		"content": result,
 	})
 	logger.Log.Info().Msg("Создали пользователя")
 
@@ -108,10 +110,11 @@ func (h *Handler) SignIn(c *gin.Context) {
 	user, err := h.Usecases.Authorization.SignUser(input.Email, input.Password)
 	if err != nil {
 		logger.Log.Error().Err(err).Msg("")
-		newErrorResponse(c, http.StatusInternalServerError, "Ошибка авторизации: "+err.Error())
+		newErrorResponse(c, http.StatusInternalServerError, "Ошибка авторизации")
 		return
 	}
 	userRole, ok := roleMap[user.Role]
+	logger.Log.Debug().Msgf("Успешно получена роль: %v", userRole)
 	if !ok {
 		newErrorResponse(c, http.StatusBadRequest, "Неверная роль")
 		return
@@ -124,7 +127,8 @@ func (h *Handler) SignIn(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"token": token,
+		"message": "Успешная авторизация",
+		"token":   token,
 	})
 	logger.Log.Info().Msg("Получили токен")
 }

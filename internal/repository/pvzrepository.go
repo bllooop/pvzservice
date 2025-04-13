@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -25,7 +26,17 @@ func (r *PvzPostgres) beginTx() (*sqlx.Tx, error) {
 	}
 	return tx, nil
 }
-
+func (r *PvzPostgres) GetListOFpvz(ctx context.Context) ([]domain.PVZ, error) {
+	var pvzList []domain.PVZ
+	query := fmt.Sprintf("SELECT * FROM %s", pvzTable)
+	err := r.db.SelectContext(ctx, &pvzList, query)
+	if err != nil {
+		logger.Log.Error().Err(err).Msg("Ошибка при выполнении запроса для получения списка ПВЗ")
+		return nil, err
+	}
+	logger.Log.Debug().Any("query", query).Msg("Запрос данных о ПВЗ")
+	return pvzList, nil
+}
 func (r *PvzPostgres) CreatePvz(pvz domain.PVZ) (domain.PVZ, error) {
 	var pvzResponse domain.PVZ
 	query := fmt.Sprintf(`INSERT INTO %s (registrationDate,city) VALUES ($1,$2) RETURNING id,registrationDate,city`, pvzTable)
@@ -128,6 +139,7 @@ func (r *PvzPostgres) queryPvzData(conditions []string, args []interface{}) ([]d
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
 	var pvz []domain.PVZ
 	err := r.db.Select(&pvz, query, args...)
+	logger.Log.Debug().Any("query", query).Msg("Запрос данных о ПВЗ")
 	return pvz, err
 }
 
@@ -139,6 +151,7 @@ func (r *PvzPostgres) queryReceptionData(conditionsOther []string, args []interf
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
 	var receptions []domain.ProductReception
 	err := r.db.Select(&receptions, query, args...)
+	logger.Log.Debug().Any("query", query).Msg("Запрос данных о приемках")
 	return receptions, err
 }
 
@@ -150,6 +163,7 @@ func (r *PvzPostgres) queryProductData(conditionsOther []string, args []interfac
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
 	var products []domain.Product
 	err := r.db.Select(&products, query, args...)
+	logger.Log.Debug().Any("query", query).Msg("Запрос данных о товарах")
 	return products, err
 }
 

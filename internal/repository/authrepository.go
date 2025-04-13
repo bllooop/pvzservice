@@ -20,23 +20,23 @@ func NewAuthPostgres(db *sqlx.DB) *AuthPostgres {
 	}
 }
 
-func (r *AuthPostgres) CreateUser(user domain.User) (int, error) {
-	var id int
-	query := fmt.Sprintf(`INSERT INTO %s (email,password,role) VALUES ($1,$2,$3) RETURNING id`, userListTable)
+func (r *AuthPostgres) CreateUser(user domain.User) (domain.User, error) {
+	var respUser domain.User
+	query := fmt.Sprintf(`INSERT INTO %s (email,password,role) VALUES ($1,$2,$3) RETURNING email,role`, userListTable)
 	row := r.db.QueryRowx(query, user.Email, user.Password, user.Role)
 	logger.Log.Debug().Str("query", query).Msg("Выполнение запроса регистрации")
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+	if err := row.Scan(&respUser.Email, &respUser.Role); err != nil {
+		return domain.User{}, err
 	}
-	logger.Log.Debug().Int("id", id).Msg("Успешно зарегестрирован пользователь")
-	return id, nil
+	logger.Log.Debug().Any("user", respUser).Msg("Успешно зарегестрирован пользователь")
+	return respUser, nil
 }
 
 func (r *AuthPostgres) SignUser(email string) (domain.User, error) {
 	var user domain.User
-	query := fmt.Sprintf(`SELECT id,email,password FROM %s WHERE email=$1`, userListTable)
+	query := fmt.Sprintf(`SELECT id,email,password,role FROM %s WHERE email=$1`, userListTable)
 	res := r.db.QueryRowx(query, email)
-	err := res.Scan(&user.Id, &user.Email, &user.Password)
+	err := res.Scan(&user.Id, &user.Email, &user.Password, &user.Role)
 	logger.Log.Debug().Str("query", query).Msg("Выполнение запроса авторизации")
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

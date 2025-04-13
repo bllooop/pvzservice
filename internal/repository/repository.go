@@ -1,13 +1,15 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/bllooop/pvzservice/internal/domain"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type Authorization interface {
-	CreateUser(user domain.User) (int, error)
+	CreateUser(user domain.User) (domain.User, error)
 	SignUser(email string) (domain.User, error)
 }
 type Pvz interface {
@@ -17,6 +19,7 @@ type Pvz interface {
 	AddProdToRecep(product domain.Product) (domain.Product, error)
 	DeleteLastProduct(delProd uuid.UUID) error
 	CloseReception(closeRec uuid.UUID) (domain.ProductReception, error)
+	GetListOFpvz(ctx context.Context) ([]domain.PVZ, error)
 }
 
 type Repository struct {

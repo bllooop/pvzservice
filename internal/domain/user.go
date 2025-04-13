@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 type User struct {
 	Id       uuid.UUID `json:"-" db:"id"`
 	Email    string    `json:"email"`
-	Password string    `json:"password"`
+	Password string    `json:"password,omitempty"`
 	Role     string    `json:"role" binding:"required,oneof=employee moderator"`
 }
 

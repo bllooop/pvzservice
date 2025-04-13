@@ -15,7 +15,13 @@ type Handler struct {
 }
 
 func NewHandler(usecases *usecase.Usecase) *Handler {
-	return &Handler{Usecases: usecases, Now: func() time.Time { return time.Date(2025, 4, 10, 15, 5, 17, 329922000, time.UTC) }}
+	return &Handler{Usecases: usecases, Now: func() time.Time { return time.Now() }}
+}
+func NewHandlerWithFixedTime(usecases *usecase.Usecase, fixedTime time.Time) *Handler {
+	return &Handler{
+		Usecases: usecases,
+		Now:      func() time.Time { return fixedTime },
+	}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {

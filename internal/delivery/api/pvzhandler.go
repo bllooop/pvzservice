@@ -51,7 +51,7 @@ func (h *Handler) CreatePvz(c *gin.Context) {
 	prometheus.NumOfCreatedPVZ.Inc()
 	c.JSON(http.StatusOK, map[string]any{
 		"message": "ПВЗ создан",
-		"data":    result,
+		"content": result,
 	})
 	logger.Log.Info().Msg("Получен ответ cоздание пвз")
 }
@@ -105,17 +105,11 @@ func (h *Handler) GetPvz(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, "Ошибка выполнения запроса "+err.Error())
 		return
 	}
-	r := result[0]
 
 	logger.Log.Info().Msg("Получен ответ на запрос информации о ПВЗ")
-	/*c.JSON(http.StatusOK, map[string]any{
-		"description": "Список ПВЗ",
-		"content":     result,
-	})*/
 	c.JSON(http.StatusOK, map[string]any{
-		"description": "Список ПВЗ",
-		"pvz":         r.PvzInfo,
-		"receptions":  r.ReceptionsInfo,
+		"message": "Список ПВЗ",
+		"content": result,
 	})
 }
 
@@ -155,7 +149,7 @@ func (h *Handler) CloseLast(c *gin.Context) {
 	logger.Log.Info().Msg("Получен ответ на закрытие приемки")
 	c.JSON(http.StatusOK, map[string]any{
 		"message": "Приемка закрыта",
-		"data":    result,
+		"content": result,
 	})
 }
 func (h *Handler) DeleteLast(c *gin.Context) {
@@ -242,7 +236,7 @@ func (h *Handler) CreateReceptions(c *gin.Context) {
 	logger.Log.Info().Msg("Получен ответ на добавление информации о приемке")
 	c.JSON(http.StatusOK, map[string]any{
 		"message": "Приемка создана",
-		"data":    result,
+		"content": result,
 	})
 
 }
@@ -292,7 +286,7 @@ func (h *Handler) AddProducts(c *gin.Context) {
 	logger.Log.Info().Msg("Получен ответ на добавление товаров")
 	c.JSON(http.StatusOK, map[string]any{
 		"message": "Товар добавлен",
-		"data":    result,
+		"content": result,
 	})
 }
 

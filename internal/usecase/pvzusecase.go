@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/bllooop/pvzservice/internal/domain"
 	"github.com/bllooop/pvzservice/internal/repository"
 	"github.com/google/uuid"
@@ -35,4 +37,8 @@ func (s *PvzUsecase) DeleteLastProduct(delProd uuid.UUID) error {
 }
 func (s *PvzUsecase) CloseReception(closeRec uuid.UUID) (domain.ProductReception, error) {
 	return s.repo.CloseReception(closeRec)
+}
+
+func (s *PvzUsecase) GetListOFpvz(ctx context.Context) ([]domain.PVZ, error) {
+	return s.repo.GetListOFpvz(ctx)
 }

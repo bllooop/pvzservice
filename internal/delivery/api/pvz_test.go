@@ -21,7 +21,7 @@ import (
 
 func TestHandler_createPvz(t *testing.T) {
 	type mockBehavior func(s *mock_usecase.MockPvz, pvz domain.PVZ)
-	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 329922000, time.UTC)
+	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 0, time.UTC)
 	userID, err := uuid.NewRandom()
 	if err != nil {
 		panic(err)
@@ -52,10 +52,10 @@ func TestHandler_createPvz(t *testing.T) {
 			},
 			expectedStatusCode: 200,
 			expectedResponseBody: fmt.Sprintf(`{
-				"data": {
+				"content": {
 					"city": "Москва", 
 					"id": "%s", 
-					"registrationDate": "2025-04-10T15:05:17.329922Z"
+					"registrationDate": "2025-04-10T15:05:17Z"
 				},
 				"message": "ПВЗ создан"
 			}`, userID.String()),
@@ -107,10 +107,8 @@ func TestHandler_createPvz(t *testing.T) {
 			testCase.mockBehavior(repo, testCase.inputPVZ)
 
 			usecases := &usecase.Usecase{Pvz: repo}
-			handler := Handler{
-				Usecases: usecases,
-				Now:      func() time.Time { return fixedTime },
-			}
+			handler := NewHandlerWithFixedTime(usecases, fixedTime)
+
 			r := gin.New()
 			api := r.Group("/api")
 			api.POST("/pvz", func(c *gin.Context) {
@@ -134,7 +132,7 @@ func TestHandler_createPvz(t *testing.T) {
 
 func TestHandler_closeLast(t *testing.T) {
 	type mockBehavior func(s *mock_usecase.MockPvz, pvzId uuid.UUID)
-	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 329922000, time.UTC)
+	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 0, time.UTC)
 	userID, err := uuid.NewRandom()
 	if err != nil {
 		panic(err)
@@ -163,9 +161,9 @@ func TestHandler_closeLast(t *testing.T) {
 			},
 			expectedStatusCode: 200,
 			expectedResponseBody: fmt.Sprintf(`{
-                "data": {
+                "content": {
                     "id": "%s",
-                    "dateTime": "2025-04-10T15:05:17.329922Z",
+                    "dateTime": "2025-04-10T15:05:17Z",
                     "pvzId": "%s",
                     "status": "close"
                 },
@@ -227,10 +225,8 @@ func TestHandler_closeLast(t *testing.T) {
 			}
 
 			usecases := &usecase.Usecase{Pvz: repo}
-			handler := Handler{
-				Usecases: usecases,
-				Now:      func() time.Time { return fixedTime },
-			}
+			handler := NewHandlerWithFixedTime(usecases, fixedTime)
+
 			r := gin.New()
 			api := r.Group("/api")
 			api.POST("/pvz/:pvzId/close_last_reception", func(c *gin.Context) {
@@ -349,7 +345,7 @@ func TestHandler_deleteLast(t *testing.T) {
 
 func TestHandler_createReception(t *testing.T) {
 	type mockBehavior func(s *mock_usecase.MockPvz, reception domain.ProductReception)
-	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 329922000, time.UTC)
+	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 0, time.UTC)
 	userID, err := uuid.NewRandom()
 	if err != nil {
 		panic(err)
@@ -387,9 +383,9 @@ func TestHandler_createReception(t *testing.T) {
 			},
 			expectedStatusCode: 200,
 			expectedResponseBody: fmt.Sprintf(`{
-				"data": {
+				"content": {
 					"id": "%s",  
-					"dateTime": "2025-04-10T15:05:17.329922Z", 
+					"dateTime": "2025-04-10T15:05:17Z", 
 					"pvzId": "%s", 
 					"status": "in_progress"
 				},
@@ -469,10 +465,8 @@ func TestHandler_createReception(t *testing.T) {
 			}*/
 			testCase.mockBehavior(repo, testCase.inputRecep)
 			usecases := &usecase.Usecase{Pvz: repo}
-			handler := Handler{
-				Usecases: usecases,
-				Now:      func() time.Time { return fixedTime },
-			}
+			handler := NewHandlerWithFixedTime(usecases, fixedTime)
+
 			r := gin.New()
 			api := r.Group("/api")
 			api.POST("/receptions", func(c *gin.Context) {
@@ -498,7 +492,7 @@ func TestHandler_createReception(t *testing.T) {
 
 func TestHandler_addProduct(t *testing.T) {
 	type mockBehavior func(s *mock_usecase.MockPvz, product domain.Product)
-	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 329922000, time.UTC)
+	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 0, time.UTC)
 	userID, err := uuid.NewRandom()
 	if err != nil {
 		panic(err)
@@ -536,9 +530,9 @@ func TestHandler_addProduct(t *testing.T) {
 			},
 			expectedStatusCode: 200,
 			expectedResponseBody: fmt.Sprintf(`{
-				"data":     {
+				"content":     {
             "id": "%s",
-            "dateTime": "2025-04-10T15:05:17.329922Z",
+            "dateTime": "2025-04-10T15:05:17Z",
             "type": "электроника",
             "receptionId": "%s"
           },
@@ -638,10 +632,8 @@ func TestHandler_addProduct(t *testing.T) {
 			}*/
 			testCase.mockBehavior(repo, testCase.inputProd)
 			usecases := &usecase.Usecase{Pvz: repo}
-			handler := Handler{
-				Usecases: usecases,
-				Now:      func() time.Time { return fixedTime },
-			}
+			handler := NewHandlerWithFixedTime(usecases, fixedTime)
+
 			r := gin.New()
 			api := r.Group("/api")
 			api.POST("/products", func(c *gin.Context) {
@@ -690,7 +682,7 @@ func TestHandler_getPvz(t *testing.T) {
 			},
 			expectedStatusCode: 200,
 			expectedResponseBody: `{
-				"description": "Список ПВЗ",
+				"message": "Список ПВЗ",
 				"content": []
 			  }`,
 		},

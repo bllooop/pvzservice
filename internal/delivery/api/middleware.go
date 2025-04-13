@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	logger "github.com/bllooop/pvzservice/pkg/logging"
 	"github.com/bllooop/pvzservice/prometheus"
 	"github.com/gin-gonic/gin"
 )
@@ -80,7 +81,11 @@ func (h *Handler) PrometheusMiddleware() gin.HandlerFunc {
 
 		duration := time.Since(start).Seconds()
 		statusCode := strconv.Itoa(c.Writer.Status())
-
+		path := c.FullPath()
+		if path == "" {
+			path = "unknown"
+		}
+		logger.Log.Debug().Msgf("Recording metrics: method=%s path=%s status=%s duration=%f", c.Request.Method, path, statusCode, duration)
 		prometheus.HTTPRequestTotal.WithLabelValues(c.Request.Method, c.FullPath(), statusCode).Inc()
 		prometheus.HTTPRequestDuration.WithLabelValues(c.Request.Method, c.FullPath(), statusCode).Observe(duration)
 	}

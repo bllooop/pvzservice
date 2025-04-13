@@ -25,13 +25,13 @@ func TestAuthPostgres_Create(t *testing.T) {
 		name    string
 		mock    func()
 		input   domain.User
-		want    int
+		want    domain.User
 		wantErr bool
 	}{
 		{
 			name: "Ok",
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
+				rows := sqlmock.NewRows([]string{"email", "password"}).AddRow("email", "employee")
 				mock.ExpectQuery("INSERT INTO userlist").
 					WithArgs("email", "123", "employee").WillReturnRows(rows)
 			},
@@ -40,7 +40,10 @@ func TestAuthPostgres_Create(t *testing.T) {
 				Password: "123",
 				Role:     "employee",
 			},
-			want: 1,
+			want: domain.User{
+				Email: "email",
+				Role:  "employee",
+			},
 		},
 		{
 			name: "Пустые поля вводных данных",
@@ -99,8 +102,8 @@ func TestAuthPostgres_SignUser(t *testing.T) {
 		{
 			name: "Ok",
 			mock: func() {
-				rows := sqlmock.NewRows([]string{"id", "email", "password"}).
-					AddRow(userID, "test", "password")
+				rows := sqlmock.NewRows([]string{"id", "email", "password", "role"}).
+					AddRow(userID, "test", "password", "employee")
 				mock.ExpectQuery(fmt.Sprintf("SELECT (.+) FROM %s", userListTable)).
 					WithArgs("test").WillReturnRows(rows)
 			},
@@ -109,6 +112,7 @@ func TestAuthPostgres_SignUser(t *testing.T) {
 				Id:       userID,
 				Email:    "test",
 				Password: "password",
+				Role:     "employee",
 			},
 		},
 		{
@@ -144,8 +148,4 @@ func TestAuthPostgres_SignUser(t *testing.T) {
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
 	}
-}
-
-func IntPointer(s int) *int {
-	return &s
 }

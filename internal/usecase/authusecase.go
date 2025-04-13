@@ -33,11 +33,11 @@ type tokenClaims struct {
 	UserId   string `json:"user_id"`
 }
 
-func (s *AuthUsecase) CreateUser(user domain.User) (int, error) {
+func (s *AuthUsecase) CreateUser(user domain.User) (domain.User, error) {
 	var err error
 	user.Password, err = HashPassword(user.Password)
 	if err != nil {
-		return 0, err
+		return domain.User{}, err
 	}
 	return s.repo.CreateUser(user)
 }

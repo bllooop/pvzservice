@@ -95,11 +95,11 @@ func (r *PvzPostgres) CloseReception(closeProd uuid.UUID) (domain.ProductRecepti
 	defer tx.Rollback()
 	lastStatus, recepId, err := r.getLastReceptionStatus(tx, closeProd)
 	if lastStatus == "close" {
-		return domain.ProductReception{}, fmt.Errorf("Неверный запрос, нет активной приемки или нет товаров для удаления")
+		return domain.ProductReception{}, fmt.Errorf("Неверный запрос или приемка уже закрыта")
 	}
 	if ok, err := r.checkIfAddedProducts(tx, closeProd, recepId); err != nil || !ok {
 		logger.Log.Error().Err(err).Msg("Ошибка проверки добавления товаров")
-		return domain.ProductReception{}, fmt.Errorf("Неверный запрос, нет активной приемки или нет товаров для удаления")
+		return domain.ProductReception{}, fmt.Errorf("Неверный запрос или приемка уже закрыта")
 	}
 	logger.Log.Debug().Any("reception id", recepId).Msg("id приемки")
 	res, err := r.statusChange(tx, closeProd, recepId)

@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	domain "github.com/bllooop/pvzservice/internal/domain"
@@ -42,10 +43,10 @@ func (m *MockAuthorization) EXPECT() *MockAuthorizationMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockAuthorization) CreateUser(user domain.User) (int, error) {
+func (m *MockAuthorization) CreateUser(user domain.User) (domain.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", user)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -198,6 +199,21 @@ func (m *MockPvz) DeleteLastProduct(delProd uuid.UUID) error {
 func (mr *MockPvzMockRecorder) DeleteLastProduct(delProd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLastProduct", reflect.TypeOf((*MockPvz)(nil).DeleteLastProduct), delProd)
+}
+
+// GetListOFpvz mocks base method.
+func (m *MockPvz) GetListOFpvz(ctx context.Context) ([]domain.PVZ, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetListOFpvz", ctx)
+	ret0, _ := ret[0].([]domain.PVZ)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetListOFpvz indicates an expected call of GetListOFpvz.
+func (mr *MockPvzMockRecorder) GetListOFpvz(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetListOFpvz", reflect.TypeOf((*MockPvz)(nil).GetListOFpvz), ctx)
 }
 
 // GetPvz mocks base method.

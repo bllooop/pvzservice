@@ -66,16 +66,18 @@ func Run() {
 	logger.Log.Debug().Msg("Инициализация обработчиков API")
 	handler := handlers.NewHandler(usecases)
 	srv := new(Server)
-
+	//http serv
 	go func() {
 		logger.Log.Info().Msg("Запуск сервера...")
-		if err := srv.RunServer(viper.GetString("port"), handler.InitRoutes()); err != nil && err == http.ErrServerClosed {
-			logger.Log.Info().Msg("Сервер был закрыт аккуратно")
+		if err := srv.StartHTTP(viper.GetString("port"), handler.InitRoutes()); err != nil && err == http.ErrServerClosed {
+			logger.Log.Info().Msg("HTTP сервер был закрыт аккуратно")
 		} else {
 			logger.Log.Error().Err(err).Msg("")
-			logger.Log.Fatal().Msg("При запуске сервера произошла ошибка")
+			logger.Log.Fatal().Msg("При запуске HTTP сервера произошла ошибка")
 		}
 	}()
+	//grpc serv
+	go StartGRPC(viper.GetString("portGrpc"), usecases)
 	logger.Log.Info().Msg("Сервер работает")
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
