@@ -105,12 +105,18 @@ func (h *Handler) GetPvz(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, "Ошибка выполнения запроса "+err.Error())
 		return
 	}
+	r := result[0]
+
 	logger.Log.Info().Msg("Получен ответ на запрос информации о ПВЗ")
-	c.JSON(http.StatusOK, map[string]any{
+	/*c.JSON(http.StatusOK, map[string]any{
 		"description": "Список ПВЗ",
 		"content":     result,
+	})*/
+	c.JSON(http.StatusOK, map[string]any{
+		"description": "Список ПВЗ",
+		"pvz":         r.PvzInfo,
+		"receptions":  r.ReceptionsInfo,
 	})
-
 }
 
 func (h *Handler) CloseLast(c *gin.Context) {

@@ -664,3 +664,79 @@ func TestHandler_addProduct(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_getPvz(t *testing.T) {
+	type mockBehavior func(s *mock_usecase.MockPvz, params domain.GettingPvzParams)
+	fixedTime := time.Date(2025, 4, 10, 15, 5, 17, 0, time.UTC)
+
+	testTable := []struct {
+		name                 string
+		inputUserRole        int
+		inputParams          domain.GettingPvzParams
+		mockBehavior         mockBehavior
+		expectedStatusCode   int
+		expectedResponseBody string
+	}{
+		{
+			name: "OK",
+			inputParams: domain.GettingPvzParams{
+				Start: fixedTime,
+				Page:  1,
+				Limit: 10,
+			},
+			inputUserRole: 2,
+			mockBehavior: func(s *mock_usecase.MockPvz, gettingPvz domain.GettingPvzParams) {
+				s.EXPECT().GetPvz(gettingPvz).Return([]domain.PvzSummary{}, nil)
+			},
+			expectedStatusCode: 200,
+			expectedResponseBody: `{
+				"description": "Список ПВЗ",
+				"content": []
+			  }`,
+		},
+		{
+			name: "Ошибка выполнения запроса",
+			inputParams: domain.GettingPvzParams{
+				Start: fixedTime,
+				Page:  1,
+				Limit: 10,
+			},
+			inputUserRole: 2,
+			mockBehavior: func(s *mock_usecase.MockPvz, gettingPvz domain.GettingPvzParams) {
+				s.EXPECT().GetPvz(gettingPvz).Return([]domain.PvzSummary{}, errors.New("Internal Server Error"))
+			},
+			expectedStatusCode:   500,
+			expectedResponseBody: `{"message":"Ошибка выполнения запроса Internal Server Error"}`,
+		},
+	}
+	for _, testCase := range testTable {
+		t.Run(testCase.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			repo := mock_usecase.NewMockPvz(c)
+			testCase.mockBehavior(repo, testCase.inputParams)
+
+			usecases := &usecase.Usecase{Pvz: repo}
+			handler := Handler{
+				Usecases: usecases,
+			}
+			r := gin.New()
+			api := r.Group("/api")
+			api.GET("/pvz", func(c *gin.Context) {
+				c.Set("userRole", testCase.inputUserRole)
+				handler.GetPvz(c)
+			})
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", "/api/pvz?startDate=2025-04-10T15:05:17Z&page=1&limit=10", nil)
+
+			r.ServeHTTP(w, req)
+			assert.Equal(t, w.Code, testCase.expectedStatusCode)
+			if json.Valid([]byte(testCase.expectedResponseBody)) {
+				assert.JSONEq(t, testCase.expectedResponseBody, w.Body.String())
+			} else {
+				assert.Equal(t, testCase.expectedResponseBody, strings.TrimSpace(w.Body.String()))
+			}
+		})
+	}
+}

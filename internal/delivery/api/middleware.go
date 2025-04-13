@@ -3,8 +3,11 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/bllooop/pvzservice/prometheus"
 	"github.com/gin-gonic/gin"
 )
 
@@ -67,4 +70,18 @@ func getUserId(c *gin.Context) (int, error) {
 	}
 
 	return idInt, nil
+}
+
+func (h *Handler) PrometheusMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+
+		c.Next()
+
+		duration := time.Since(start).Seconds()
+		statusCode := strconv.Itoa(c.Writer.Status())
+
+		prometheus.HTTPRequestTotal.WithLabelValues(c.Request.Method, c.FullPath(), statusCode).Inc()
+		prometheus.HTTPRequestDuration.WithLabelValues(c.Request.Method, c.FullPath(), statusCode).Observe(duration)
+	}
 }

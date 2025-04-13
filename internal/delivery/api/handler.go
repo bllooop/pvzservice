@@ -26,6 +26,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 	}))
+	router.Use(h.PrometheusMiddleware())
 	router.POST("/register", h.SignUp)
 	router.POST("/login", h.SignIn)
 	router.POST("/dummyLogin", h.DummyLogin)
