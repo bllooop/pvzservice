@@ -77,14 +77,14 @@ func Run() {
 		}
 	}()
 	//grpc serv
-	logger.Log.Info().Msg("Запуск сервера GRPC...")
+	logger.Log.Info().Msg("Запуск сервера gRPC...")
 	grpcServer := StartGRPC(viper.GetString("portGrpc"), usecases)
-	logger.Log.Info().Msg("Сервер HTTP и GRPC работает")
+	logger.Log.Info().Msg("Сервер HTTP и gRPC работает")
 	go func() {
 		logger.Log.Info().Msg("Попытка подключения к клиенту GRPC")
 		err := CallGRPCClient()
 		if err != nil {
-			logger.Log.Error().Err(err).Msg("Ошибка подключения к клиенту GRPC")
+			logger.Log.Error().Err(err).Msg("Ошибка подключения к клиенту gRPC")
 		}
 
 		ticker := time.NewTicker(1 * time.Minute)
@@ -93,13 +93,13 @@ func Run() {
 		for {
 			select {
 			case <-ticker.C:
-				logger.Log.Info().Msg("Вызов клиента GRPC")
+				logger.Log.Info().Msg("Вызов клиента gRPC")
 				err := CallGRPCClient()
 				if err != nil {
-					logger.Log.Error().Err(err).Msg("Вызов GRPC закончился с ошибкой")
+					logger.Log.Error().Err(err).Msg("Вызов gRPC закончился с ошибкой")
 					logger.Log.Fatal().Msg("Ошибка подключения")
 				} else {
-					logger.Log.Info().Msg("Успешно вызван клиент GRPC")
+					logger.Log.Info().Msg("Успешно вызван клиент gRPC")
 				}
 			}
 		}
@@ -118,7 +118,7 @@ func Run() {
 		logger.Log.Fatal().Msg("При выключении сервера произошла ошибка")
 	}
 	grpcServer.GracefulStop()
-	logger.Log.Info().Msg("GRPC сервер отключен")
+	logger.Log.Info().Msg("gRPC сервер отключен")
 }
 
 func initConfig() error {

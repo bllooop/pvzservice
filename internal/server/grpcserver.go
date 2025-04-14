@@ -14,7 +14,7 @@ func StartGRPC(port string, usecase *usecase.Usecase) *grpc.Server {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		logger.Log.Error().Err(err).Msg("")
-		logger.Log.Fatal().Msg("При запуске GRPC сервера произошла ошибка")
+		logger.Log.Fatal().Msg("При запуске gRPC сервера произошла ошибка")
 	}
 	grpcServer := grpc.NewServer()
 	pbzSrv := api.NewPVZServiceServer(usecase)

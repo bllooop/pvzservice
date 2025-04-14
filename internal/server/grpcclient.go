@@ -18,7 +18,7 @@ func CallGRPCClient() error {
 		return err
 	}
 	defer conn.Close()
-	logger.Log.Info().Msg("GRPC клиент успешно подключен")
+	logger.Log.Info().Msg("gRPC клиент успешно подключен")
 	client := pb.NewPVZServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

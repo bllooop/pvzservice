@@ -5,6 +5,7 @@ import (
 
 	pb "github.com/bllooop/pvzservice/grpcpvz"
 	"github.com/bllooop/pvzservice/internal/usecase"
+	logger "github.com/bllooop/pvzservice/pkg/logging"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -19,6 +20,7 @@ func NewPVZServiceServer(s *usecase.Usecase) *PVZServiceServerHandle {
 func (g *PVZServiceServerHandle) GetPVZList(ctx context.Context, req *pb.GetPVZListRequest) (*pb.GetPVZListResponse, error) {
 	pvzs, err := g.usecase.GetListOFpvz(ctx)
 	if err != nil {
+		logger.Log.Error().Err(err).Msg("")
 		return nil, err
 	}
 
@@ -34,6 +36,7 @@ func (g *PVZServiceServerHandle) GetPVZList(ctx context.Context, req *pb.GetPVZL
 			City:             pvz.City,
 		})
 	}
+	logger.Log.Debug().Any("pvz", pvzList).Msg("Получен список ПВЗ")
 
 	return &pb.GetPVZListResponse{Pvzs: pvzList}, nil
 }
