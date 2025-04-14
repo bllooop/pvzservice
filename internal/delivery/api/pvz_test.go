@@ -449,20 +449,6 @@ func TestHandler_createReception(t *testing.T) {
 			defer c.Finish()
 
 			repo := mock_usecase.NewMockPvz(c)
-
-			/*var parsedPvzId uuid.UUID
-			var parseErr error
-			if testCase.inputBody != "" && testCase.inputBody != "invalid-uuid" {
-				parsedPvzId, parseErr = uuid.Parse(testCase.inputBody)
-			}
-
-			if parseErr == nil && testCase.mockBehavior != nil {
-				reception := domain.ProductReception{
-					PVZId:  &parsedPvzId,
-					Status: &stat,
-				}
-				testCase.mockBehavior(repo, reception)
-			}*/
 			testCase.mockBehavior(repo, testCase.inputRecep)
 			usecases := &usecase.Usecase{Pvz: repo}
 			handler := NewHandlerWithFixedTime(usecases, fixedTime)
@@ -616,20 +602,6 @@ func TestHandler_addProduct(t *testing.T) {
 			defer c.Finish()
 
 			repo := mock_usecase.NewMockPvz(c)
-
-			/*var parsedPvzId uuid.UUID
-			var parseErr error
-			if testCase.inputBody != "" && testCase.inputBody != "invalid-uuid" {
-				parsedPvzId, parseErr = uuid.Parse(testCase.inputBody)
-			}
-
-			if parseErr == nil && testCase.mockBehavior != nil {
-				reception := domain.ProductReception{
-					PVZId:  &parsedPvzId,
-					Status: &stat,
-				}
-				testCase.mockBehavior(repo, reception)
-			}*/
 			testCase.mockBehavior(repo, testCase.inputProd)
 			usecases := &usecase.Usecase{Pvz: repo}
 			handler := NewHandlerWithFixedTime(usecases, fixedTime)
