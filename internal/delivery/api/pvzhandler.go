@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -81,14 +80,16 @@ func (h *Handler) GetPvz(c *gin.Context) {
 	if startDate != "" {
 		startParse, err = time.Parse(time.RFC3339, startDate)
 		if err != nil {
-			fmt.Println("Error parsing date:", err)
+			logger.Log.Error().Err(err).Msg("")
+			newErrorResponse(c, http.StatusBadRequest, "Неверный запрос")
 			return
 		}
 	}
 	if endDate != "" {
 		endParse, err = time.Parse(time.RFC3339, endDate)
 		if err != nil {
-			fmt.Println("Error parsing date:", err)
+			logger.Log.Error().Err(err).Msg("")
+			newErrorResponse(c, http.StatusBadRequest, "Неверный запрос")
 			return
 		}
 	}
