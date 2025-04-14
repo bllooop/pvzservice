@@ -63,7 +63,7 @@ curl --location --request POST 'http://localhost:8080/login' \
 --header 'Content-Type: application/json' \
 --data '{
     "email":"{email}",
-    "password": "123"
+    "password": "{password}"
 }'
 ```
 Вместо email вводится выбранный нами при регистрации username, в поле password соответственно пароль. 
