@@ -11,20 +11,21 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func main() {
-	conn, err := grpc.NewClient("localhost"+viper.GetString("portGrpc"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+func CallGRPCClient() error {
+	conn, err := grpc.NewClient("pvzservice"+viper.GetString("portGrpc"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		logger.Log.Error().Err(err).Msg("")
-		logger.Log.Fatal().Msg("Ошибка подключения")
+		logger.Log.Error().Err(err).Msg("Ошибка подключения")
+		return err
 	}
 	defer conn.Close()
+	logger.Log.Info().Msg("GRPC клиент успешно подключен")
 	client := pb.NewPVZServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	response, err := client.GetPVZList(ctx, &pb.GetPVZListRequest{})
 	if err != nil {
-		logger.Log.Error().Err(err).Msg("")
-		logger.Log.Fatal().Msg("Ошибка вызова GetPvzList")
+		logger.Log.Error().Err(err).Msg("Ошибка вызова GetPvzList")
+		return err
 	}
 	logger.Log.Info().Msgf("Получен список PVZ в количестве %d", len(response.Pvzs))
 	for _, pvz := range response.Pvzs {
@@ -33,4 +34,5 @@ func main() {
 			logger.Log.Info().Msgf("Дата регистрации ПВЗ: %v", pvz.RegistrationDate.AsTime())
 		}
 	}
+	return nil
 }

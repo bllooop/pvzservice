@@ -28,13 +28,13 @@ type Product struct {
 }
 
 type PvzSummary struct {
-	PvzInfo        PVZ        `json:"pvz"`
-	ReceptionsInfo Receptions `json:"receptions"`
+	PvzInfo        PVZ          `json:"pvz"`
+	ReceptionsInfo []Receptions `json:"receptions"`
 }
 
 type Receptions struct {
-	ReceptionInfo []ProductReception `json:"reception"`
-	ProductInfo   []Product          `json:"products"`
+	ReceptionInfo ProductReception `json:"reception"`
+	ProductInfo   []Product        `json:"products"`
 }
 type GettingPvzParams struct {
 	Start time.Time

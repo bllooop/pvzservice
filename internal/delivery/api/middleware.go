@@ -85,8 +85,20 @@ func (h *Handler) PrometheusMiddleware() gin.HandlerFunc {
 		if path == "" {
 			path = "unknown"
 		}
-		logger.Log.Debug().Msgf("Recording metrics: method=%s path=%s status=%s duration=%f", c.Request.Method, path, statusCode, duration)
+		logMetricsOncePerMinute(c, path, statusCode, duration)
+
 		prometheus.HTTPRequestTotal.WithLabelValues(c.Request.Method, c.FullPath(), statusCode).Inc()
 		prometheus.HTTPRequestDuration.WithLabelValues(c.Request.Method, c.FullPath(), statusCode).Observe(duration)
+	}
+}
+
+var lastLogged time.Time
+
+func logMetricsOncePerMinute(c *gin.Context, path string, statusCode string, duration float64) {
+	currentTime := time.Now()
+
+	if currentTime.Sub(lastLogged) >= time.Minute {
+		logger.Log.Debug().Msgf("Recording metrics: method=%s path=%s status=%s duration=%f", c.Request.Method, path, statusCode, duration)
+		lastLogged = currentTime
 	}
 }

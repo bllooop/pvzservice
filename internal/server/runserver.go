@@ -69,16 +69,41 @@ func Run() {
 	//http serv
 	go func() {
 		logger.Log.Info().Msg("Запуск сервера...")
-		if err := srv.StartHTTP(viper.GetString("port"), handler.InitRoutes()); err != nil && err == http.ErrServerClosed {
-			logger.Log.Info().Msg("HTTP сервер был закрыт аккуратно")
-		} else {
+		if err := srv.StartHTTP(viper.GetString("port"), handler.InitRoutes()); err != nil && err != http.ErrServerClosed {
 			logger.Log.Error().Err(err).Msg("")
 			logger.Log.Fatal().Msg("При запуске HTTP сервера произошла ошибка")
+		} else {
+			logger.Log.Info().Msg("HTTP сервер был закрыт аккуратно")
 		}
 	}()
 	//grpc serv
-	go StartGRPC(viper.GetString("portGrpc"), usecases)
-	logger.Log.Info().Msg("Сервер работает")
+	logger.Log.Info().Msg("Запуск сервера GRPC...")
+	grpcServer := StartGRPC(viper.GetString("portGrpc"), usecases)
+	logger.Log.Info().Msg("Сервер HTTP и GRPC работает")
+	go func() {
+		logger.Log.Info().Msg("Попытка подключения к клиенту GRPC")
+		err := CallGRPCClient()
+		if err != nil {
+			logger.Log.Error().Err(err).Msg("Ошибка подключения к клиенту GRPC")
+		}
+
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				logger.Log.Info().Msg("Вызов клиента GRPC")
+				err := CallGRPCClient()
+				if err != nil {
+					logger.Log.Error().Err(err).Msg("Вызов GRPC закончился с ошибкой")
+					logger.Log.Fatal().Msg("Ошибка подключения")
+				} else {
+					logger.Log.Info().Msg("Успешно вызван клиент GRPC")
+				}
+			}
+		}
+	}()
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	logger.Log.Debug().Msg("Прослушивание сигналов завершения работы ОС")
@@ -92,6 +117,8 @@ func Run() {
 		logger.Log.Error().Err(err).Msg("")
 		logger.Log.Fatal().Msg("При выключении сервера произошла ошибка")
 	}
+	grpcServer.GracefulStop()
+	logger.Log.Info().Msg("GRPC сервер отключен")
 }
 
 func initConfig() error {

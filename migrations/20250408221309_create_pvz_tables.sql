@@ -1,12 +1,23 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TYPE city_enum AS ENUM ('Москва', 'Санкт-Петербург', 'Казань');
-CREATE TYPE reception_status_enum AS ENUM ('in_progress', 'close');
-CREATE TYPE product_type_enum AS ENUM ('электроника', 'одежда', 'обувь');
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'city_enum') THEN 
+        CREATE TYPE city_enum AS ENUM ('Москва', 'Санкт-Петербург', 'Казань'); 
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'reception_status_enum') THEN 
+        CREATE TYPE reception_status_enum AS ENUM ('in_progress', 'close'); 
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'product_type_enum') THEN 
+        CREATE TYPE product_type_enum AS ENUM ('электроника', 'одежда', 'обувь'); 
+    END IF;
+END; $$;
 
 CREATE TABLE pvz (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    registrationDate TIMESTAMPTZ,
+    registrationdate TIMESTAMPTZ,
     city city_enum NOT NULL
 );
 CREATE TABLE product_reception (
@@ -29,7 +40,10 @@ CREATE INDEX idx_product_reception_pvz_reception_date ON product(pvz_id, recepti
 
 -- +goose Down
 -- +goose StatementBegin
-DROP pvz;
-DROP product_reception;
-DROP product;
+DROP TYPE IF EXISTS city_enum;
+DROP TYPE IF EXISTS reception_status_enum;
+DROP TYPE IF EXISTS product_type_enum;
+DROP TABLE product;
+DROP TABLE product_reception;
+DROP TABLE pvz;
 -- +goose StatementEnd

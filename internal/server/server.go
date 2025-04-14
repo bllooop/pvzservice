@@ -14,9 +14,9 @@ func (s *Server) StartHTTP(port string, handler http.Handler) error {
 	s.httpServer = &http.Server{
 		Addr:         ":" + port,
 		Handler:      handler,
-		ReadTimeout:  5 * time.Minute,
-		WriteTimeout: 5 * time.Minute,
-		IdleTimeout:  5 * time.Minute,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 	return s.httpServer.ListenAndServe()
 }

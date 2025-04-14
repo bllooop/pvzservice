@@ -39,7 +39,7 @@ func (r *PvzPostgres) GetListOFpvz(ctx context.Context) ([]domain.PVZ, error) {
 }
 func (r *PvzPostgres) CreatePvz(pvz domain.PVZ) (domain.PVZ, error) {
 	var pvzResponse domain.PVZ
-	query := fmt.Sprintf(`INSERT INTO %s (registrationDate,city) VALUES ($1,$2) RETURNING id,registrationDate,city`, pvzTable)
+	query := fmt.Sprintf(`INSERT INTO %s (registrationdate,city) VALUES ($1,$2) RETURNING id,registrationdate,city`, pvzTable)
 	row := r.db.QueryRowx(query, pvz.DateRegister, pvz.City)
 	logger.Log.Debug().Str("query", query).Msg("Выполнение запроса заведния ПВЗ")
 	if err := row.Scan(&pvzResponse.Id, &pvzResponse.DateRegister, &pvzResponse.City); err != nil {
@@ -75,31 +75,35 @@ func (r *PvzPostgres) GetPvz(input domain.GettingPvzParams) ([]domain.PvzSummary
 	}
 	logger.Log.Debug().Any("receptions", receptions).Msg("Получены данные о приемках")
 	logger.Log.Debug().Any("products", products).Msg("Получены данные о товарах")
-	for _, pvz := range pvzs {
-		var associatedReceptions []domain.ProductReception
-		var associatedProducts []domain.Product
-
-		for _, reception := range receptions {
-			if reception.PVZId.String() == pvz.Id.String() {
-				associatedReceptions = append(associatedReceptions, reception)
-			}
-		}
-		if len(associatedReceptions) > 0 {
-			for _, product := range products {
-				if product.ReceptionId.String() == associatedReceptions[0].Id.String() {
-					associatedProducts = append(associatedProducts, product)
-				}
-			}
-		}
-		result = append(result, domain.PvzSummary{
-			PvzInfo: pvz,
-			ReceptionsInfo: domain.Receptions{
-				ReceptionInfo: associatedReceptions,
-				ProductInfo:   associatedProducts,
-			},
-		})
+	receptionMap := make(map[string][]domain.ProductReception)
+	for _, reception := range receptions {
+		receptionMap[reception.PVZId.String()] = append(receptionMap[reception.PVZId.String()], reception)
 	}
 
+	productMap := make(map[string][]domain.Product)
+	for _, product := range products {
+		productMap[product.ReceptionId.String()] = append(productMap[product.ReceptionId.String()], product)
+	}
+
+	for _, pvz := range pvzs {
+		var receptionsWithProducts []domain.Receptions
+
+		for _, reception := range receptionMap[pvz.Id.String()] {
+			receptionsWithProducts = append(receptionsWithProducts, domain.Receptions{
+				ReceptionInfo: reception,
+				ProductInfo:   productMap[reception.Id.String()],
+			})
+		}
+
+		result = append(result, domain.PvzSummary{
+			PvzInfo:        pvz,
+			ReceptionsInfo: receptionsWithProducts,
+		})
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
 	logger.Log.Debug().Any("response", result).Msg("Успешно получены данные о ПВЗ")
 	return result, nil
 }
