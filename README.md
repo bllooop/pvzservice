@@ -23,10 +23,7 @@
    Сервер для prometheus должен быть поднят на порту 9000 и отдавать данные по ручке /metrics.
 4. Настроить логирование в проекте
 
-gRPC клиент вызывается периодично раз в минуту и выводит результат запроса. При наличии утилиты grpcurl возможен вызов метода через запрос
-```
-grpcurl -plaintext -d '{}' localhost:3000 pvz.v1.PVZService/GetPVZList
-```
+gRPC клиент вызывается периодично раз в минуту и после выполнения вызова метода выводит результат запроса в логах сервиса. 
 ## Запуск приложения:
 ### Использование docker-compose.
    Для сборки и запуска приложения нужно ввести в консоль команду
@@ -76,7 +73,7 @@ curl --location --request POST 'http://localhost:8080/login' \
 ### 2. ПВЗ
 #### Для создания ПВЗ необходимо выполнить запрос
 ```
-curl --location --request POST 'http://localhost:8080/api/pvz' \
+curl --location --request POST 'http://localhost:8080/pvz' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {token}' \
 --data '{
@@ -87,7 +84,7 @@ curl --location --request POST 'http://localhost:8080/api/pvz' \
 Создать ПВЗ может только пользователь с ролью moderator.
 #### Для получения данных о ПВЗ необходимо выполнить запрос
 ```
-curl --location --request GET 'http://localhost:8080/api/pvz?startDate={2025-04-14T15%3A30%3A00Z}&endDate={2025-04-14T15%3A30%3A00Z}&page=1&limit=10' \
+curl --location --request GET 'http://localhost:8080/pvz?startDate={2025-04-14T15%3A30%3A00Z}&endDate={2025-04-14T15%3A30%3A00Z}&page=1&limit=10' \
 --header 'Authorization: Bearer {token}' \
 --data ''
 ```
@@ -95,7 +92,7 @@ curl --location --request GET 'http://localhost:8080/api/pvz?startDate={2025-04-
 ### 3. Приемка и товары
 #### Для добавления информации о приёмке товаров необходимо выполнить запрос
 ```
-curl --location --request POST 'http://localhost:8080/api/receptions' \
+curl --location --request POST 'http://localhost:8080/receptions' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {token}' \
 --data '{
@@ -107,7 +104,7 @@ curl --location --request POST 'http://localhost:8080/api/receptions' \
 Только авторизованный пользователь системы с ролью «сотрудник ПВЗ/employee» может инициировать приём товара.
 #### Для добавления товаров в рамках одной приёмки необходимо выполнить запрос
 ```
-curl --location --request POST 'http://localhost:8080/api/products' \
+curl --location --request POST 'http://localhost:8080/products' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {token}' \
 --data '{
@@ -121,14 +118,14 @@ curl --location --request POST 'http://localhost:8080/api/products' \
 В случае успешного запроса вернется структура добавленного товара.
 #### Для удаления товаров в рамках не закрытой приёмки необходимо выполнить запрос
 ```
-curl --location --request POST 'http://localhost:8080/api/pvz/{pvzId}/delete_last_product' \
+curl --location --request POST 'http://localhost:8080/pvz/{pvzId}/delete_last_product' \
 --header 'Authorization: Bearer {token}' \
 --data ''
 ```
 Вместо pvzId вводится id ПВЗ в котором нам необходимо удалить товар. Удаляется последний добавленный товар по принципу LIFO. Только авторизованный пользователь системы с ролью «сотрудник ПВЗ/employee» может удалять товары. Удаление товара возможно только до закрытия приёмки, после этого уже невозможно изменить состав товаров, которые были приняты на ПВЗ. В случае успешного запроса вернется сообщение об удачном удалении.
 #### Для закрытия приёмки необходимо выполнить запрос
 ```
-curl --location --request POST 'http://localhost:8080/api/pvz/{pvzId}/close_last_reception' \
+curl --location --request POST 'http://localhost:8080/pvz/{pvzId}/close_last_reception' \
 --header 'Authorization: Bearer {token}' \
 --data ''
 ```

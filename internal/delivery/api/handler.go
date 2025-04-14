@@ -37,14 +37,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	router.POST("/login", h.SignIn)
 	router.POST("/dummyLogin", h.DummyLogin)
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	api := router.Group("/api", h.authIdentity)
-	{
-		api.POST("/pvz", h.CreatePvz)
-		api.GET("/pvz", h.GetPvz)
-		api.POST("/pvz/:pvzId/close_last_reception", h.CloseLast)
-		api.POST("/pvz/:pvzId/delete_last_product", h.DeleteLast)
-		api.POST("/receptions", h.CreateReceptions)
-		api.POST("/products", h.AddProducts)
-	}
+	router.POST("/pvz", h.authIdentity, h.CreatePvz)
+	router.GET("/pvz", h.authIdentity, h.GetPvz)
+	router.POST("/pvz/:pvzId/close_last_reception", h.authIdentity, h.CloseLast)
+	router.POST("/pvz/:pvzId/delete_last_product", h.authIdentity, h.DeleteLast)
+	router.POST("/receptions", h.authIdentity, h.CreateReceptions)
+	router.POST("/products", h.authIdentity, h.AddProducts)
 	return router
 }
