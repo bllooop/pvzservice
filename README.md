@@ -154,7 +154,7 @@ go test ./...
 По адресу http://localhost:9090/ , а также по /metrics, реализована выдача метрик Prometheus.
 Для отображения метрик необходимо ввести в поиске 
 
-*Технические:
+* Технические:
    * Количество запросов - http_requests_total
    * Время ответа - http_request_duration_seconds_bucket, http_request_duration_seconds_sum или http_request_duration_seconds_count
 * Бизнесовые:
